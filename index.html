@@ -48,13 +48,13 @@
         /* --- 修正后的音乐控制图标 --- */
         #music-toggle {
             position: fixed; 
-            top: 80px; /* 向下移动，避开顶部进度条区域 */
+            top: 80px; 
             right: 15px; 
             width: 38px; height: 38px;
-            z-index: 2100; /* 确保在最上层 */
+            z-index: 2100; 
             cursor: pointer; 
             display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.8); /* 增强背景对比度 */
+            background: rgba(255,255,255,0.8); 
             border-radius: 50%; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             font-size: 20px; 
@@ -64,19 +64,21 @@
         .rotating { animation: rotateMusic 3s linear infinite; }
         @keyframes rotateMusic { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* 封面样式 */
+        /* 封面样式 - 已改为紫色信封 */
         #cover-page {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             height: 80vh; text-align: center; animation: fadeIn 1.5s ease;
         }
         .pixel-mail {
-            width: 60px; height: 40px; background: #d15d5d; position: relative; margin-bottom: 30px;
-            box-shadow: 4px 4px 0 #4a2c10;
+            width: 60px; height: 40px; 
+            background: #9b72cf; /* 紫色信封主体 */
+            position: relative; margin-bottom: 30px;
+            box-shadow: 4px 4px 0 #6a4c93; /* 深紫色阴影 */
         }
         .pixel-mail::after {
             content: ""; position: absolute; top: 0; left: 0; width: 0; height: 0;
             border-left: 30px solid transparent; border-right: 30px solid transparent;
-            border-top: 20px solid #f2ede4; opacity: 0.8;
+            border-top: 20px solid #f2ede4; opacity: 0.9;
         }
         .cover-title { font-size: 1.8rem; font-weight: 600; margin: 10px 0; color: #333; letter-spacing: 1px; }
         .cover-subtitle { font-size: 0.85rem; color: var(--accent-soft); letter-spacing: 2px; }
@@ -171,8 +173,8 @@
                 { role: "her", text: "你好呀（表情包）" },
                 { role: "me", text: "hii，你好，老师你发色好吸睛，现在还是紫毛吗" }
             ],
-            os: `<b>卧槽。</b>
-烟熏妆！大眼睛！屌屌的！我的菜！
+            os: `<b>烟熏妆！大眼睛！屌屌的！</b>
+我的菜！
 
 我怎么不早点刷附近的人？
 谢谢老天爷
@@ -188,7 +190,7 @@
                 { role: "me", text: "hii，你好，老师你发色好吸睛，现在还是紫毛吗", isHistory: true },
                 { role: "info", text: "她当天晚上没回我" }
             ],
-            os: `稳住， 可能在忙，人家不回也正常
+            os: `稳住， 可能在忙工作，人家不回也正常
 
 但是，<b>不能访问她主页太多次</b>
 有访客记录
@@ -212,7 +214,7 @@
 是在忙吧？
 还是误触跟我聊天？
 
-还是广撒网？？
+还是广撒网？
 三分钟热度的拉拉？？
 
 讨厌你
@@ -275,7 +277,7 @@
 多说话？
 我合理理解为等于<b>多打电话</b>没毛病吧
 
-她接了就是她的选择
+她接了就是她的暗示成功
 不是我太主动
 逻辑完美
 
@@ -290,7 +292,7 @@
                 { role: "me", text: "怕吵到你嘛" }
             ],
             os: `她在意我醒没醒？？？
-<b>爽死我了。</b>
+<b>爽死我了</b>
 她居然居然居然在意
 
 而且
@@ -302,7 +304,7 @@
             transitionText: "广州 · 晴 · 接机口",
             time: "接机 · 假装镇定的小废物",
             type: "chat",
-            dialogue: [{ role: "info", text: "在接机口买咖啡，找个位置坐，强行刷手机。" }],
+            dialogue: [{ role: "info", text: "在接机口买咖啡，找个位置坐，强行刷手机" }],
             os: `她落地了
 啊啊啊啊啊
 
@@ -330,7 +332,7 @@
             os: `......
 她来了
 比我想象更有气场一点
-确实像姐
+确实像姐姐
 
 她盯着我看
 我不敢抬头
@@ -373,13 +375,13 @@
 
 如果每天醒来都能看到她就好了
 我要好好珍惜
-接下来还能在一起的时间。`
+接下来几天还能在一起的时间`
         },
         {
             scene: "🏠 日常篇",
             time: "小惊喜计划",
             type: "chat",
-            dialogue: [{ role: "info", text: "明天离开成都，悄悄准备惊喜。" }],
+            dialogue: [{ role: "info", text: "明天离开成都，悄悄准备惊喜" }],
             os: `这家伙老说我表白的时候不认真
 那就补一个认真的表白
 
@@ -387,7 +389,8 @@
 让她自己摸到
 
 花要对猫无害
-蜡烛要不丑
+蜡烛有了
+但是烛台没有好看的
 
 再买个泡脚盆
 <b>她手脚冰凉</b>
