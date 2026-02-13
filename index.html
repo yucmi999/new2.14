@@ -45,13 +45,22 @@
 
         #app { width: 100%; max-width: 480px; padding: 40px 24px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
-        /* 音乐控制图标 */
+        /* --- 修正后的音乐控制图标 --- */
         #music-toggle {
-            position: fixed; top: 20px; right: 20px; width: 34px; height: 34px;
-            z-index: 2100; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.6); border-radius: 50%; box-shadow: 0 2px 8px var(--shadow);
-            font-size: 18px; transition: all 0.3s;
+            position: fixed; 
+            top: 80px; /* 向下移动，避开顶部进度条区域 */
+            right: 15px; 
+            width: 38px; height: 38px;
+            z-index: 2100; /* 确保在最上层 */
+            cursor: pointer; 
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.8); /* 增强背景对比度 */
+            border-radius: 50%; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 20px; 
+            transition: all 0.3s;
         }
+        .dark-mode #music-toggle { background: rgba(50,50,60,0.8); }
         .rotating { animation: rotateMusic 3s linear infinite; }
         @keyframes rotateMusic { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
@@ -83,7 +92,7 @@
             color: white; font-size: 1.1rem; letter-spacing: 2px; text-align: center;
         }
 
-        .header-meta { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--accent-soft); margin-bottom: 15px; }
+        .header-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--accent-soft); margin-bottom: 15px; font-weight: 500; }
         .progress-bar-wrap { height: 2px; background: rgba(0,0,0,0.05); width: 100%; margin-bottom: 35px; }
         #progress-inner { height: 100%; background: var(--heart-red); width: 0%; transition: width 0.4s ease; }
 
@@ -131,7 +140,7 @@
 
 <div id="transition-overlay"></div>
 
-<div id="music-toggle" onclick="toggleMusic()">🎵</div>
+<div id="music-toggle" onclick="toggleMusic(event)">🎵</div>
 
 <audio id="bgm" loop>
     <source src="love.mp3" type="audio/mpeg">
@@ -140,7 +149,6 @@
 
 <div id="app">
     <div id="page-content"></div>
-    
     <div class="nav-footer" id="nav-footer" style="display: none;">
         <button id="prev-btn" class="nav-btn" onclick="changePage(-1)">上一页</button>
         <button id="next-btn" class="nav-btn" onclick="changePage(1)">下一页</button>
@@ -148,6 +156,7 @@
 </div>
 
 <script>
+    // 你的完整文案数组（这里保持你之前发给我的内容不动）
     const storyData = [
         {
             type: "cover",
@@ -418,14 +427,15 @@
     const overlay = document.getElementById('transition-overlay');
     const musicBtn = document.getElementById('music-toggle');
 
-    // 设置音量
+    // 默认音量 70%
     audio.volume = 0.7;
 
     const hour = new Date().getHours();
     if (hour >= 23 || hour < 5) document.getElementById('body').classList.add('dark-mode');
 
-    // 修复后的音乐开关控制
-    function toggleMusic() {
+    // 修复后的音乐控制（增加 stopPropagation 防止爱心特效干扰）
+    function toggleMusic(e) {
+        e.stopPropagation(); // 阻止触发 body 的点击事件
         if (audio.paused) {
             audio.play();
             musicBtn.classList.add('rotating');
@@ -438,13 +448,16 @@
     }
 
     document.addEventListener('click', (e) => {
-        // 点击页面（非按钮）时的全局逻辑
+        // 全局点击逻辑：初次点击激活音乐
         if(audio.paused && !musicBtn.dataset.manuallyPaused) {
             audio.play().then(() => {
                 musicBtn.classList.add('rotating');
             }).catch(()=>{});
         }
         
+        // 排除点击导航按钮时产生爱心（可选）
+        if (e.target.tagName === 'BUTTON' || e.target.id === 'music-toggle') return;
+
         for(let i=0; i<3; i++) {
             const heart = document.createElement('div');
             heart.className = 'pixel-heart';
