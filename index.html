@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>那些没说出口的 OS</title>
+    <style>
+        :root {
+            --bg-start: #fdfaf5;
+            --bg-end: #f2ede4;
+            --text-main: #4a4a4a;
+            --accent-soft: #b5ada0;
+            --her-bubble: #e9f2e9; 
+            --me-bubble: #ffffff;    
+            --os-bg: #fffcf9;
+            --os-border: #e6ddd0;
+            --heart-red: #ff8e8e;
+            --shadow: rgba(0, 0, 0, 0.04);
+            --transition-bg: #1a1a1a;
+        }
+
+        body.dark-mode {
+            --bg-start: #2c2c34; --bg-end: #1e1e24; --text-main: #d1d1d1;
+            --accent-soft: #8a8a95; --her-bubble: #3d4a3d; --me-bubble: #454550;
+            --os-bg: #25252b; --os-border: #444450;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-start), var(--bg-end));
+            font-family: -apple-system, "HarmonyOS Sans SC", "STHeiti", sans-serif;
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            touch-action: manipulation;
+            transition: background 1s ease;
+        }
+
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAACZJREFUGF5jYGBgYGBgYOBiYGBgZGBgYGBgYGBgYGBgYGBgYGBgYACvAgQB9X82iAAAAABJRU5ErkJggg==');
+            opacity: 0.05; pointer-events: none; z-index: 1000;
+        }
+
+        #app { width: 100%; max-width: 480px; padding: 40px 24px; box-sizing: border-box; display: flex; flex-direction: column; position: relative; z-index: 10; }
+
+        /* 封面样式 */
+        #cover-page {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            height: 80vh; text-align: center; animation: fadeIn 1.5s ease;
+        }
+        .pixel-mail {
+            width: 60px; height: 40px; background: #d15d5d; position: relative; margin-bottom: 30px;
+            box-shadow: 4px 4px 0 #4a2c10;
+        }
+        .pixel-mail::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 0; height: 0;
+            border-left: 30px solid transparent; border-right: 30px solid transparent;
+            border-top: 20px solid #f2ede4; opacity: 0.8;
+        }
+        .cover-title { font-size: 1.8rem; font-weight: 600; margin: 10px 0; color: #333; letter-spacing: 1px; }
+        .cover-subtitle { font-size: 0.85rem; color: var(--accent-soft); letter-spacing: 2px; }
+        .start-btn {
+            margin-top: 50px; background: white; border: 1.5px solid var(--os-border);
+            padding: 12px 30px; border-radius: 30px; color: var(--text-main);
+            font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 10px var(--shadow);
+        }
+
+        /* 电影转场 */
+        #transition-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--transition-bg);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+            color: white; font-size: 1.1rem; letter-spacing: 2px; text-align: center;
+        }
+
+        .header-meta { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--accent-soft); margin-bottom: 15px; }
+        .progress-bar-wrap { height: 2px; background: rgba(0,0,0,0.05); width: 100%; margin-bottom: 35px; }
+        #progress-inner { height: 100%; background: var(--heart-red); width: 0%; transition: width 0.4s ease; }
+
+        .scene-title { font-size: 1.15rem; text-align: center; margin-bottom: 8px; font-weight: 600; }
+        .time-hint { font-size: 0.8rem; color: var(--accent-soft); text-align: center; margin-bottom: 40px; }
+
+        .message-row { display: flex; align-items: flex-start; margin-bottom: 28px; opacity: 0; transform: translateY(15px); }
+        .message-row.show { animation: slideInUp 0.6s forwards cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .message-row.me { flex-direction: row-reverse; }
+        .message-row.history { opacity: 0.2 !important; filter: grayscale(80%); transform: scale(0.95); margin-bottom: 12px; }
+
+        .avatar { width: 52px; height: 52px; border-radius: 50%; border: 2.5px solid white; box-shadow: 0 4px 12px var(--shadow); overflow: hidden; flex-shrink: 0; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .bubble { max-width: 68%; padding: 13px 18px; margin: 0 12px; font-size: 0.95rem; line-height: 1.6; border-radius: 20px; background: white; box-shadow: 2px 4px 12px var(--shadow); border: 1px solid rgba(0,0,0,0.01); }
+        .her .bubble { background: var(--her-bubble); border-top-left-radius: 4px; }
+        .me .bubble { background: var(--me-bubble); border-top-right-radius: 4px; }
+
+        .narrative { text-align: center; font-size: 0.82rem; color: #a1a1a1; margin: 30px 0; font-style: italic; opacity: 0; }
+        .narrative.show { animation: fadeIn 1s forwards; }
+
+        .os-btn-container { text-align: center; margin: 35px 0; opacity: 0; }
+        .os-btn-container.show { animation: fadeIn 1s forwards; }
+        .os-toggle-btn { background: white; border: 1.5px solid var(--os-border); padding: 9px 22px; border-radius: 25px; color: var(--accent-soft); font-size: 0.8rem; cursor: pointer; }
+        .os-card { background: var(--os-bg); border: 1px solid var(--os-border); padding: 22px; border-radius: 14px; margin-top: 18px; display: none; text-align: left; animation: slideUp 0.5s forwards; }
+        .os-card.visible { display: block; box-shadow: 0 0 15px rgba(255, 142, 142, 0.15); }
+        .os-content { font-size: 0.9rem; line-height: 1.85; white-space: pre-wrap; position: relative; }
+
+        .hidden-secret { position: absolute; background: #d15d5d; color: white; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; display: none; top: -30px; left: 20%; z-index: 100; box-shadow: 2px 2px 0 #4a2c10; }
+        .can-touch { text-decoration: underline dotted var(--heart-red); cursor: help; position: relative; }
+
+        .nav-footer { display: flex; justify-content: space-between; margin-top: 50px; padding-bottom: 40px; }
+        .nav-btn { background: none; border: none; padding: 12px; cursor: pointer; color: var(--accent-soft); font-size: 0.85rem; }
+        .final-letter { line-height: 2.3; font-size: 1rem; padding: 10px; white-space: pre-wrap; }
+
+        .pixel-heart { position: fixed; width: 8px; height: 8px; background-color: var(--heart-red); pointer-events: none; z-index: 999; box-shadow: 2px 2px 0 #d15d5d; }
+
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes heartFade { to { transform: translateY(-120px) rotate(45deg); opacity: 0; } }
+    </style>
+</head>
+<body id="body">
+
+<div id="transition-overlay"></div>
+
+<audio id="bgm" loop>
+    <source src="love.mp3" type="audio/mpeg">
+    <source src="https://music.163.com/song/media/outer/url?id=1411558182.mp3" type="audio/mpeg">
+</audio>
+
+<div id="app">
+    <div id="page-content"></div>
+    
+    <div class="nav-footer" id="nav-footer" style="display: none;">
+        <button id="prev-btn" class="nav-btn" onclick="changePage(-1)">上一页</button>
+        <button id="next-btn" class="nav-btn" onclick="changePage(1)">下一页</button>
+    </div>
+</div>
+
+<script>
+    const storyData = [
+        {
+            type: "cover",
+            title: "那些没说出口的 OS",
+            subtitle: "一个普通人类的心跳记录"
+        },
+        {
+            scene: "🌟 初始篇",
+            time: "Day 1 · 紫毛星人降临",
+            type: "chat",
+            dialogue: [
+                { role: "her", text: "你好呀（表情包）" },
+                { role: "me", text: "hii，你好，老师你发色好吸睛，现在还是紫毛吗" }
+            ],
+            os: `<b>卧槽。</b>
+烟熏妆！大眼睛！屌屌的！我的菜！
+
+我怎么不早点刷附近的人？
+谢谢老天爷
+美女主动跟我打招呼？？？
+也是好起来了hhhhhh`
+        },
+        {
+            scene: "🌟 初始篇",
+            time: "第一晚 · 强装冷静",
+            type: "chat",
+            dialogue: [
+                { role: "her", text: "你好呀（表情包）", isHistory: true },
+                { role: "me", text: "hii，你好，老师你发色好吸睛，现在还是紫毛吗", isHistory: true },
+                { role: "info", text: "她当天晚上没回我" }
+            ],
+            os: `稳住， 可能在忙，人家不回也正常
+
+但是，<b>不能访问她主页太多次</b>
+有访客记录
+
+我就...录个屏吧
+我不是变态、我不是变态、我不是变态
+
+好，这是最后一次看她
+真的最后一次
+（五分钟后：再看一次`
+        },
+        {
+            scene: "🌟 初始篇",
+            time: "第一天没回",
+            type: "chat",
+            dialogue: [
+                { role: "me", text: "hii，你好，老师你发色好吸睛，现在还是紫毛吗", isHistory: true },
+                { role: "info", text: "对话框一片安静..." }
+            ],
+            os: `？？
+是在忙吧？
+还是误触跟我聊天？
+
+还是广撒网？？
+三分钟热度的拉拉？？
+
+讨厌你
+（但我还是在等`
+        },
+        {
+            scene: "🌟 初始篇",
+            time: "第二天没回",
+            type: "chat",
+            dialogue: [{ role: "info", text: "依然没有消息" }],
+            os: `哼
+我上这个软件又不是为了看她
+
+我是来看有没有别人跟我打招呼
+
+……
+（打开软件第一件事还是看看有没有她的未读消息
+
+没缘分就没缘分吧
+
+说不定她只是偶尔上来看看的侄女
+陪老公小孩去了
+对！一定是这样
+
+（开始自我安慰文学创作`
+        },
+        {
+            scene: "🌟 初始篇",
+            time: "第三天 · 奇迹发生",
+            type: "chat",
+            dialogue: [
+                { role: "her", text: "哈哈hii，我没打开这个都没看到" },
+                { role: "her", text: "我是紫毛星人" }
+            ],
+            os: `啊啊啊啊啊啊啊<b>她回我辣！！！！</b>
+
+我不是一次性聊天人！！！
+天无绝人之路！！
+
+等等...
+怎么隔了1000+公里？？
+之前不是在广州吗
+
+算了，先聊
+毕竟这么对我眼缘`
+        },
+        {
+            scene: "📞 电话篇",
+            transitionText: "一周后 · 电话里的声音",
+            time: "我想听她声音",
+            type: "chat",
+            dialogue: [
+                { role: "info", text: "认识一个星期了。每天聊到三四点。" },
+                { role: "her", text: "老师，我还跟男的相过亲你知道不，嘿嘿，你不知道" },
+                { role: "me", text: "？啥时候" },
+                { role: "her", text: "你得跟我多说话我才告诉你" }
+            ],
+            os: `机会来了
+
+多说话？
+我合理理解为等于<b>多打电话</b>没毛病吧
+
+她接了就是她的选择
+不是我太主动
+逻辑完美
+
+（手已经按下通话键`
+        },
+        {
+            scene: "📞 电话篇",
+            time: "第一次通话后的早晨",
+            type: "chat",
+            dialogue: [
+                { role: "her", text: "你醒了15分钟怎么不给我发消息" },
+                { role: "me", text: "怕吵到你嘛" }
+            ],
+            os: `她在意我醒没醒？？？
+<b>爽死我了。</b>
+她居然居然居然在意
+
+而且
+她刚睡醒的声音怎么这么可爱？？
+我能不能再听一遍`
+        },
+        {
+            scene: "✈️ 见面篇",
+            transitionText: "广州 · 晴 · 接机口",
+            time: "接机 · 假装镇定的小废物",
+            type: "chat",
+            dialogue: [{ role: "info", text: "在接机口买咖啡，找个位置坐，强行刷手机。" }],
+            os: `她落地了
+啊啊啊啊啊
+
+不急不急
+她还要取行李
+
+（手机震动）
+她：我取行李了
+？？？？？？
+
+这么快的吗？？
+刚刚不是还在滑行？？
+她怎么直接闪现？？
+
+我还没准备好啊啊啊`
+        },
+        {
+            scene: "✈️ 见面篇",
+            time: "社死现场",
+            type: "chat",
+            dialogue: [
+                { role: "info", text: "终于，那个显眼的紫毛出现了..." },
+                { role: "info", text: "她盯着我看，而我不敢抬头" }
+            ],
+            os: `......
+她来了
+比我想象更有气场一点
+确实像姐
+
+她盯着我看
+我不敢抬头
+我怎么这么怂啊
+
+我的形象<b>全没了</b>`
+        },
+        {
+            scene: "🏠 日常篇",
+            transitionText: "成都 · 阴 · 家里",
+            time: "臭屁事件",
+            type: "chat",
+            dialogue: [
+                { role: "info", text: "她在椅子上挪了一下。噗噗。" },
+                { role: "me", text: "宝宝，我们的关系已经这么亲密了吗？" },
+                { role: "her", text: "哎呀我忍不住嘛，你嫌弃我？！" },
+                { role: "me", text: "可是太臭了（假装逃跑）" }
+            ],
+            os: `这猪看起来干干净净的
+<span class="can-touch" onmouseover="showSecret(true)" onmouseout="showSecret(false)">屁怎么这么臭<span id="secret-pop" class="hidden-secret">（其实臭我也喜欢，嘿嘿）</span></span>。
+
+不过我刚刚跑去卫生间
+是不是成功逗她笑了？
+
+她笑起来好可爱
+
+算了
+臭就臭吧`
+        },
+        {
+            scene: "🏠 日常篇",
+            time: "清晨的宝宝猪",
+            type: "chat",
+            dialogue: [{ role: "info", text: "她还在睡 Zzzzz" }],
+            os: `我的宝宝猪
+睡觉怎么也这么可爱
+
+<b>睫毛好长
+皮肤好白</b>
+
+如果每天醒来都能看到她就好了
+我要好好珍惜
+接下来还能在一起的时间。`
+        },
+        {
+            scene: "🏠 日常篇",
+            time: "小惊喜计划",
+            type: "chat",
+            dialogue: [{ role: "info", text: "明天离开成都，悄悄准备惊喜。" }],
+            os: `这家伙老说我表白的时候不认真
+那就补一个认真的表白
+
+放枕头底下
+让她自己摸到
+
+花要对猫无害
+蜡烛要不丑
+
+再买个泡脚盆
+<b>她手脚冰凉</b>
+这样她以后一个人在家也能泡
+
+完美完美`
+        },
+        {
+            scene: "🌅 结尾",
+            time: "To my Babe",
+            type: "final",
+            content: `宝宝：
+最开始那三天里
+我已经在脑子里演完了很多种结局
+
+有你不再回我
+有我删掉软件
+还有没缘分就算了
+
+但好在你回我了
+
+后来电话那边的声音
+机场里走出来的紫色头发
+沙发上认真装作没事发生的样子
+都慢慢变成了我们
+
+虽然那天没有点太多次你的主页
+但现在
+我可以光明正大地看着你
+
+<b>情人节快乐 陈陈</b>`
+        }
+    ];
+
+    let currentIndex = 0;
+    const audio = document.getElementById('bgm');
+    const overlay = document.getElementById('transition-overlay');
+
+    const hour = new Date().getHours();
+    if (hour >= 23 || hour < 5) document.getElementById('body').classList.add('dark-mode');
+
+    document.addEventListener('click', (e) => {
+        if(audio.paused) audio.play();
+        for(let i=0; i<3; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'pixel-heart';
+            heart.style.left = e.clientX + (Math.random()*30-15) + 'px';
+            heart.style.top = e.clientY + 'px';
+            heart.style.animation = `heartFade ${0.6 + Math.random()*0.5}s forwards`;
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 1000);
+        }
+    });
+
+    function showSecret(show) {
+        const pop = document.getElementById('secret-pop');
+        if(pop) pop.style.display = show ? 'block' : 'none';
+    }
+
+    async function render(skipTransition = false) {
+        const data = storyData[currentIndex];
+        const pageContainer = document.getElementById('page-content');
+        const nav = document.getElementById('nav-footer');
+        
+        // 场景转场逻辑
+        if (!skipTransition && data.transitionText) {
+            overlay.innerText = data.transitionText;
+            overlay.style.display = 'flex';
+            overlay.style.opacity = 0;
+            let op = 0;
+            const fadeIn = setInterval(() => { op += 0.1; overlay.style.opacity = op; if(op >= 1) clearInterval(fadeIn); }, 50);
+            await new Promise(r => setTimeout(r, 1200));
+            const fadeOut = setInterval(() => { op -= 0.1; overlay.style.opacity = op; if(op <= 0) { clearInterval(fadeOut); overlay.style.display = 'none'; } }, 50);
+        }
+
+        pageContainer.innerHTML = '';
+
+        if (data.type === "cover") {
+            nav.style.display = 'none';
+            pageContainer.innerHTML = `
+                <div id="cover-page">
+                    <div class="pixel-mail"></div>
+                    <div class="cover-title">${data.title}</div>
+                    <div class="cover-subtitle">${data.subtitle}</div>
+                    <button class="start-btn" onclick="changePage(1)">翻开故事</button>
+                </div>`;
+        } else {
+            nav.style.display = 'flex';
+            // 显示头部元信息和进度条
+            let html = `
+                <div class="header-meta">
+                    <span>${data.scene ? data.scene.split('｜')[0] : ''}</span>
+                    <span>${String(currentIndex).padStart(2, '0')} / ${storyData.length - 1}</span>
+                </div>
+                <div class="progress-bar-wrap"><div id="progress-inner" style="width: ${(currentIndex / (storyData.length-1)) * 100}%"></div></div>`;
+            
+            if (data.type === 'chat') {
+                html += `<div class="scene-title">${data.scene}</div><div class="time-hint">${data.time}</div>`;
+                data.dialogue.forEach((item, index) => {
+                    if (item.role === 'info') html += `<div class="narrative" id="item-${index}">${item.text}</div>`;
+                    else {
+                        const avatarImg = item.role === 'her' ? 'her.jpg' : 'me.jpg';
+                        const fallbackImg = item.role === 'her' ? 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Felix' : 'https://api.dicebear.com/7.x/pixel-art/svg?seed=Aneka';
+                        const historyClass = item.isHistory ? 'history' : '';
+                        html += `<div class="message-row ${item.role} ${historyClass}" id="item-${index}">
+                                    <div class="avatar"><img src="${avatarImg}" onerror="this.src='${fallbackImg}'"></div>
+                                    <div class="bubble">${item.text}</div>
+                                 </div>`;
+                    }
+                });
+                html += `<div class="os-btn-container" id="os-btn-wrap">
+                            <button class="os-toggle-btn" onclick="toggleOS()">查看我的内心 OS</button>
+                            <div id="os-card" class="os-card"><span class="os-label">🧠 内心实录</span><div class="os-content">${data.os}</div></div>
+                         </div>`;
+                pageContainer.innerHTML = html;
+
+                // 打字机顺次显示
+                data.dialogue.forEach((_, index) => {
+                    setTimeout(() => { const el = document.getElementById(`item-${index}`); if(el) el.classList.add('show'); }, index * 400);
+                });
+                setTimeout(() => { const el = document.getElementById('os-btn-wrap'); if(el) el.classList.add('show'); }, data.dialogue.length * 400);
+
+            } else {
+                // 结尾页逻辑
+                html += `<div class="scene-title">${data.scene}</div><div class="time-hint">${data.time}</div><div class="final-letter">${data.content}</div>`;
+                pageContainer.innerHTML = html;
+                // 特殊导航：情书页只保留“回到封面”
+                nav.innerHTML = `<button class="nav-btn" style="margin: 0 auto;" onclick="goHome()">回到封面</button>`;
+            }
+        }
+
+        if(currentIndex !== storyData.length - 1) {
+            document.getElementById('nav-footer').innerHTML = `
+                <button id="prev-btn" class="nav-btn" onclick="changePage(-1)">上一页</button>
+                <button id="next-btn" class="nav-btn" onclick="changePage(1)">下一页</button>`;
+            document.getElementById('prev-btn').disabled = currentIndex <= 1;
+        }
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function toggleOS() {
+        const card = document.getElementById('os-card');
+        const isVisible = card.classList.toggle('visible');
+        document.querySelector('.os-toggle-btn').innerText = isVisible ? '收起内心实录' : '查看我的内心 OS';
+    }
+
+    function changePage(step) { currentIndex += step; render(); }
+    function goHome() { currentIndex = 0; render(true); }
+
+    render(true);
+</script>
+
+</body>
+</html>
