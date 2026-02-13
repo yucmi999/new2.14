@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>那些没说出口的 os</title>
+    <title>那些没说出口的 OS</title>
     <style>
         :root {
             --bg-start: #fdfaf5;
@@ -48,9 +47,9 @@
 
         /* 音乐控制图标 */
         #music-toggle {
-            position: fixed; top: 20px; right: 20px; width: 30px; height: 30px;
-            z-index: 2001; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,0.5); border-radius: 50%; box-shadow: 0 2px 8px var(--shadow);
+            position: fixed; top: 20px; right: 20px; width: 34px; height: 34px;
+            z-index: 2100; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.6); border-radius: 50%; box-shadow: 0 2px 8px var(--shadow);
             font-size: 18px; transition: all 0.3s;
         }
         .rotating { animation: rotateMusic 3s linear infinite; }
@@ -78,7 +77,6 @@
             font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 10px var(--shadow);
         }
 
-        /* 电影转场 */
         #transition-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--transition-bg);
             display: none; justify-content: center; align-items: center; z-index: 2000;
@@ -164,8 +162,8 @@
                 { role: "her", text: "你好呀（表情包）" },
                 { role: "me", text: "hii，你好，老师你发色好吸睛，现在还是紫毛吗" }
             ],
-            os: `<b>烟熏妆！大眼睛！屌屌的！</b>
-我的菜！
+            os: `<b>卧槽。</b>
+烟熏妆！大眼睛！屌屌的！我的菜！
 
 我怎么不早点刷附近的人？
 谢谢老天爷
@@ -279,10 +277,11 @@
             time: "第一次通话后的早晨",
             type: "chat",
             dialogue: [
-                { role: "her", text: "你醒了115分钟怎么不给我发消息" },
+                { role: "her", text: "你醒了15分钟怎么不给我发消息" },
                 { role: "me", text: "怕吵到你嘛" }
-            ],            os: `她在意我醒没醒？？？
-<b>爽死我了</b>
+            ],
+            os: `她在意我醒没醒？？？
+<b>爽死我了。</b>
 她居然居然居然在意
 
 而且
@@ -419,28 +418,31 @@
     const overlay = document.getElementById('transition-overlay');
     const musicBtn = document.getElementById('music-toggle');
 
-    // 1. 设置默认音量为 70%
+    // 设置音量
     audio.volume = 0.7;
 
     const hour = new Date().getHours();
     if (hour >= 23 || hour < 5) document.getElementById('body').classList.add('dark-mode');
 
-    // 音乐开关控制
+    // 修复后的音乐开关控制
     function toggleMusic() {
         if (audio.paused) {
             audio.play();
             musicBtn.classList.add('rotating');
+            delete musicBtn.dataset.manuallyPaused;
         } else {
             audio.pause();
             musicBtn.classList.remove('rotating');
+            musicBtn.dataset.manuallyPaused = "true";
         }
     }
 
     document.addEventListener('click', (e) => {
-        // 初次点击激活音乐
+        // 点击页面（非按钮）时的全局逻辑
         if(audio.paused && !musicBtn.dataset.manuallyPaused) {
-            audio.play();
-            musicBtn.classList.add('rotating');
+            audio.play().then(() => {
+                musicBtn.classList.add('rotating');
+            }).catch(()=>{});
         }
         
         for(let i=0; i<3; i++) {
@@ -550,4 +552,3 @@
 
 </body>
 </html>
-
